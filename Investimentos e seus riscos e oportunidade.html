@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inteligência Financeira | Investimentos e Riscos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface: #151b2b;
+            --surface-glass: rgba(21, 27, 43, 0.7);
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --success: #00e676;
+            --info: #00b0ff;
+            --warning: #ffc107;
+            --danger: #ff1744;
+            --purple: #b388ff;
+            --text-main: #f8f9fa;
+            --text-muted: #94a3b8;
+            --border: rgba(0, 242, 254, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; overflow-x: hidden; }
+
+        .bg-glow {
+            position: fixed; width: 600px; height: 600px; z-index: -1; border-radius: 50%; pointer-events: none;
+            background: radial-gradient(circle, rgba(79,172,254,0.15) 0%, rgba(0,0,0,0) 70%); top: -200px; left: -200px;
+        }
+        .bg-glow:nth-child(2) { top: auto; bottom: -200px; left: auto; right: -200px; background: radial-gradient(circle, rgba(0,230,118,0.08) 0%, rgba(0,0,0,0) 70%); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        header { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 100px 20px; }
+        .hero-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; background: linear-gradient(to right, var(--primary), var(--success)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-subtitle { font-size: 1.1rem; color: var(--text-muted); max-width: 700px; margin-bottom: 40px; }
+        .btn-glow { padding: 15px 40px; font-weight: 600; color: var(--bg-color); background: linear-gradient(45deg, var(--primary), var(--secondary)); border-radius: 30px; text-decoration: none; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); transition: 0.3s; cursor: pointer; border: none;}
+        .btn-glow:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(0, 242, 254, 0.7); }
+
+        section { padding: 80px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+        .section-title { text-align: center; font-size: 2.5rem; margin-bottom: 50px; }
+        .section-title span { color: var(--primary); }
+
+        /* Grid de Cards */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card { background: var(--surface-glass); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 20px; padding: 30px; transition: 0.4s; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary)); transform: scaleX(0); transform-origin: left; transition: 0.4s; }
+        .card:hover { transform: translateY(-10px); border-color: var(--primary); }
+        .card:hover::before { transform: scaleX(1); }
+        .card-icon { font-size: 2rem; margin-bottom: 15px; background: rgba(0, 242, 254, 0.1); padding: 10px 15px; border-radius: 12px; width: max-content; }
+        .card h3 { font-size: 1.3rem; margin-bottom: 10px; color: var(--primary); }
+        
+        .tax-tag { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 15px; }
+        .risk-very-low { background: rgba(0,230,118,0.1); color: var(--success); }
+        .risk-low { background: rgba(0,176,255,0.1); color: var(--info); }
+        .risk-med { background: rgba(255,193,7,0.1); color: var(--warning); }
+        .risk-high { background: rgba(255,23,68,0.1); color: var(--danger); }
+        .risk-extreme { background: rgba(179,136,255,0.1); color: var(--purple); }
+
+        .card p { flex-grow: 1; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; }
+        
+        .btn-saiba-mais { width: 100%; padding: 10px; background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-saiba-mais:hover { background: var(--primary); color: var(--bg-color); }
+
+        /* Simulador */
+        .simulator-container { background: var(--surface); border-radius: 20px; padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .form-group { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-muted); font-size: 0.9rem; }
+        input[type="number"], select { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 1rem; outline: none; transition: 0.3s; }
+        input[type="number"]:focus, select:focus { border-color: var(--primary); }
+
+        .results-panel { background: rgba(0, 242, 254, 0.05); padding: 25px; border-radius: 15px; border: 1px dashed var(--border); display: flex; flex-direction: column; justify-content: center; }
+        .result-box { margin-bottom: 12px; }
+        .result-box:last-child { margin-bottom: 0; }
+        .result-box h4 { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        .result-value { font-size: 1.6rem; font-weight: 800; color: var(--success); }
+        .result-value.info { color: var(--info); }
+        .result-value.warning { color: var(--warning); }
+        .result-value.neutral { color: var(--text-main); }
+
+        /* Gráficos Menores */
+        .dynamic-chart-wrapper { grid-column: 1 / -1; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); height: 300px; }
+        .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .chart-wrapper { background: var(--surface); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); height: 350px; }
+
+        /* Modal / Pop-up */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: 0.3s; padding: 20px; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 40px; max-width: 600px; width: 100%; position: relative; transform: translateY(-20px); transition: 0.3s; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-close { position: absolute; top: 20px; right: 20px; background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+        .modal-close:hover { color: var(--danger); }
+        .modal-body h3 { color: var(--primary); font-size: 1.8rem; margin-bottom: 15px; }
+        .modal-body p { color: var(--text-main); font-size: 1rem; line-height: 1.7; margin-bottom: 15px; }
+        .modal-body .bc-alert { background: rgba(0,242,254,0.1); border-left: 4px solid var(--primary); padding: 15px; border-radius: 0 10px 10px 0; margin-top: 20px; font-size: 0.9rem; color: #ddd; }
+        .modal-body .bc-alert strong { color: var(--primary); }
+
+        /* Estilos do Quiz */
+        .quiz-container { background: var(--surface); border-radius: 20px; padding: 40px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 30px; }
+        .quiz-question { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .quiz-question:last-child { border-bottom: none; }
+        .quiz-question h3 { color: var(--primary); font-size: 1.1rem; margin-bottom: 15px; line-height: 1.4; }
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+        .quiz-option { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 10px; cursor: pointer; transition: 0.3s; font-size: 0.95rem; }
+        .quiz-option:hover { border-color: var(--primary); background: rgba(0,242,254,0.05); }
+        .quiz-option.selected { border-color: var(--primary); background: rgba(0,242,254,0.1); }
+        .quiz-option.correct { border-color: var(--success); background: rgba(0,230,118,0.1); }
+        .quiz-option.wrong { border-color: var(--danger); background: rgba(255,23,68,0.1); }
+        .quiz-option.disabled { pointer-events: none; }
+        .quiz-explanation { display: none; margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-left: 4px solid var(--info); border-radius: 0 10px 10px 0; font-size: 0.9rem; color: #ddd; }
+        .quiz-explanation.active { display: block; }
+        .quiz-result-box { display: none; text-align: center; margin-top: 30px; padding: 30px; background: rgba(0,242,254,0.05); border: 1px dashed var(--primary); border-radius: 15px; }
+        .quiz-result-box h3 { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+        .quiz-result-box p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 20px; }
+
+        @media (max-width: 900px) {
+            .simulator-container, .charts-container { grid-template-columns: 1fr; }
+            .hero-title { font-size: 2.5rem; }
+            .quiz-container { padding: 20px; }
+            .chart-wrapper { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <header>
+            <h1 class="hero-title">O Mundo dos Investimentos</h1>
+            <p class="hero-subtitle">Entenda o que são investimentos, a relação inseparável entre risco e retorno, e como fazer os juros compostos trabalharem para multiplicar o seu patrimônio ao longo do tempo.</p>
+            <a href="#modalities" class="btn-glow">Conhecer Modalidades</a>
+        </header>
+
+        <section id="modalities">
+            <h2 class="section-title">Modalidades, <span>Riscos e Operações</span></h2>
+            <div class="cards-grid">
+                
+                <article class="card">
+                    <div class="card-icon">🏛️</div>
+                    <h3>Tesouro Direto (Selic/IPCA)</h3>
+                    <span class="tax-tag risk-very-low">Risco Muito Baixo | Renda Fixa</span>
+                    <p>Você empresta dinheiro para o Governo Federal. É considerado o investimento mais seguro do país. Alta liquidez e rendimento atrelado à taxa básica de juros ou inflação.</p>
+                    <button class="btn-saiba-mais" onclick="openModal('tesouro')">Detalhes e Operação</button>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">🏦</div>
+                    <h3>CDB, LCI e LCA</h3>
+                    <span class="tax-tag risk-low">Risco Baixo | Renda Fixa</span>
+                    <p>Você empresta dinheiro para Bancos. Eles usam seu dinheiro para financiar imóveis, agro ou crédito. Possuem proteção do FGC (Fundo Garantidor de Créditos) até R$ 250 mil.</p>
+                    <button class="btn-saiba-mais" onclick="openModal('cdb')">Detalhes e Operação</button>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">🏢</div>
+                    <h3>Fundos Imobiliários (FIIs)</h3>
+                    <span class="tax-tag risk-med">Risco Médio | Renda Variável</span>
+                    <p>Você compra cotas de grandes imóveis (shoppings, galpões logísticos) negociados na Bolsa. O lucro vem da valorização da cota e do recebimento de "aluguéis" mensais (dividendos).</p>
+                    <button class="btn-saiba-mais" onclick="openModal('fiis')">Detalhes e Operação</button>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">📈</div>
+                    <h3>Ações de Empresas</h3>
+                    <span class="tax-tag risk-high">Risco Alto | Renda Variável</span>
+                    <p>Você se torna sócio de empresas (Petrobras, Itaú, Weg). Se a empresa lucra e cresce, você ganha dividendos e valorização. Se a empresa vai mal, você perde dinheiro.</p>
+                    <button class="btn-saiba-mais" onclick="openModal('acoes')">Detalhes e Operação</button>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">₿</div>
+                    <h3>Criptomoedas (Bitcoin)</h3>
+                    <span class="tax-tag risk-extreme">Risco Extremo | Descentralizado</span>
+                    <p>Ativos digitais altamente voláteis sem controle de governos. Possuem potencial de ganho astronômico, mas risco de perda total em curtíssimo prazo.</p>
+                    <button class="btn-saiba-mais" onclick="openModal('cripto')">Detalhes e Operação</button>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">🐷</div>
+                    <h3>Caderneta de Poupança</h3>
+                    <span class="tax-tag risk-low">Risco Baixo | Perda de Poder de Compra</span>
+                    <p>Tradicional, mas ineficiente. Frequentemente rende menos que a inflação (IPCA), o que significa que, embora o número na conta cresça, seu poder de compra diminui.</p>
+                    <button class="btn-saiba-mais" onclick="openModal('poupanca')">Detalhes e Operação</button>
+                </article>
+
+            </div>
+        </section>
+
+        <section id="simulator">
+            <h2 class="section-title">A Mágica dos <span>Juros Compostos</span></h2>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Diferente das dívidas, aqui os juros sobre juros trabalham **a seu favor**. Simule seu crescimento patrimonial.</p>
+            <div class="simulator-container">
+                
+                <div class="form-panel">
+                    <div class="form-group">
+                        <label>Valor Inicial (R$)</label>
+                        <input type="number" id="initAmount" value="1000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Aporte Mensal (R$)</label>
+                        <input type="number" id="monthlyAmount" value="500" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Tempo de Investimento (Anos)</label>
+                        <input type="number" id="years" value="15" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Rentabilidade Anual Estimada (%)</label>
+                        <select id="yieldRate">
+                            <option value="6.17">Poupança (~6,17% a.a.)</option>
+                            <option value="10.5" selected>Tesouro/CDB Médio (~10,5% a.a.)</option>
+                            <option value="12.0">FIIs (Dividendos + Valorização ~12% a.a.)</option>
+                            <option value="15.0">Bolsa de Valores Otimista (~15% a.a.)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="results-panel">
+                    <div class="result-box">
+                        <h4>Total Tirado do seu Bolso</h4>
+                        <div class="result-value neutral" id="res-invested">R$ 0,00</div>
+                    </div>
+                    <div class="result-box">
+                        <h4>Apenas Juros Ganhos</h4>
+                        <div class="result-value warning" id="res-interest">R$ 0,00</div>
+                    </div>
+                    <div class="result-box">
+                        <h4>Patrimônio Final</h4>
+                        <div class="result-value success" id="res-total">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <div class="dynamic-chart-wrapper">
+                    <canvas id="growthChart"></canvas>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="charts">
+            <h2 class="section-title">Análises <span>Técnicas</span></h2>
+            <div class="charts-container">
+                <div class="chart-wrapper"><canvas id="riskReturnChart"></canvas></div>
+                <div class="chart-wrapper"><canvas id="inflationChart"></canvas></div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: QUIZ INTERATIVO -->
+        <section id="quiz-section">
+            <h2 class="section-title">Teste seus <span>Conhecimentos</span></h2>
+            <p class="hero-subtitle" style="margin: 0 auto 40px auto; text-align: center;">Verifique se você compreendeu os conceitos fundamentais para não perder dinheiro no mercado.</p>
+            
+            <div class="quiz-container" id="quizContainer">
+                <!-- Perguntas injetadas via JS -->
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn-glow" id="btnSubmitQuiz" onclick="submitQuiz()">Verificar Minhas Respostas</button>
+            </div>
+            
+            <div class="quiz-result-box" id="quizResult">
+                <h3 id="scoreText">0/10</h3>
+                <p id="scoreMessage">Mensagem</p>
+                <button class="btn-glow" onclick="resetQuiz()" style="padding: 10px 30px; font-size: 1rem;">Refazer Teste</button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Modal de Detalhes -->
+    <div class="modal-overlay" id="infoModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="forceCloseModal()">×</button>
+            <div class="modal-body" id="modalBodyContent">
+                <!-- Conteúdo injetado via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONTEÚDO DOS MODAIS ---
+        const modalData = {
+            tesouro: {
+                title: "Tesouro Direto",
+                text: "O Tesouro Direto é um programa do Tesouro Nacional. Ao investir, você compra títulos públicos. Existem três tipos principais: Selic (segue a taxa básica, ideal para reserva de emergência), Prefixado (taxa travada no momento da compra) e IPCA+ (garante rendimento sempre acima da inflação).",
+                alert: "Operação: Feita através de corretoras com taxa zero. Atenção ao 'Risco de Marcação a Mercado' nos títulos IPCA e Prefixados: se você vender antes do vencimento, pode perder dinheiro dependendo de como os juros do país estiverem no dia da venda."
+            },
+            cdb: {
+                title: "CDB, LCI e LCA",
+                text: "Certificado de Depósito Bancário (CDB), Letras de Crédito Imobiliário (LCI) e do Agronegócio (LCA). Geralmente rendem uma porcentagem do CDI (indicador que anda lado a lado com a Selic). LCIs e LCAs têm isenção de Imposto de Renda.",
+                alert: "Segurança: Contam com a proteção do FGC (Fundo Garantidor de Créditos). Se o banco quebrar, o FGC devolve seu dinheiro (limitado a R$ 250 mil por CPF/Instituição). O risco é atrelado à saúde do banco emissor."
+            },
+            fiis: {
+                title: "Fundos Imobiliários (FIIs)",
+                text: "Você abre conta numa corretora e compra 'cotas' (fatias) de fundos que administram shopping centers, lajes corporativas ou galpões de logística. Os aluguéis pagos pelos inquilinos são distribuídos mensalmente aos cotistas (você) na forma de dividendos isentos de IR.",
+                alert: "Risco: É renda variável. A cota flutua diariamente na Bolsa de Valores. Se um imóvel do fundo ficar vazio (vacância) ou um inquilino não pagar, os seus dividendos mensais irão diminuir."
+            },
+            acoes: {
+                title: "Ações de Empresas",
+                text: "Representam a menor fração do capital social de uma empresa. Você ganha de duas formas: valorização (comprar a ação por R$ 10 e vender por R$ 15) e dividendos (participação nos lucros da empresa).",
+                alert: "Risco e Operação: A oscilação (volatilidade) é diária e ditada pelo humor do mercado, economia global, dólar e resultados da empresa. Requer estômago e foco no longo prazo. Nunca invista dinheiro que você precisará usar no mês seguinte."
+            },
+            cripto: {
+                title: "Criptomoedas",
+                text: "O Bitcoin e outras moedas digitais operam em redes descentralizadas (Blockchain), sem bancos centrais emitindo ou controlando. São negociadas 24h por dia em corretoras específicas (Exchanges).",
+                alert: "Risco Extremo: São ativos incipientes e não regulados. Podem subir 100% num mês e cair 80% no mês seguinte. Especialistas recomendam ter no máximo 1% a 5% do patrimônio nesta modalidade."
+            },
+            poupanca: {
+                title: "Caderneta de Poupança",
+                text: "O investimento mais antigo e cultural do brasileiro. Quando a taxa Selic está acima de 8,5% ao ano, a poupança rende fixos 0,5% ao mês + Taxa Referencial (TR).",
+                alert: "A Armadilha: O rendimento da poupança costuma perder para a inflação (IPCA). Se a inflação foi de 6% no ano e a poupança rendeu 6%, seu ganho real foi ZERO. Além disso, ela só rende no 'aniversário' do mês; se sacar um dia antes, perde o rendimento do mês todo."
+            }
+        };
+
+        const modalOverlay = document.getElementById('infoModal');
+        const modalBodyContent = document.getElementById('modalBodyContent');
+
+        function openModal(type) {
+            const data = modalData[type];
+            modalBodyContent.innerHTML = `
+                <h3>${data.title}</h3>
+                <p>${data.text}</p>
+                <div class="bc-alert">
+                    <strong>Ponto Importante:</strong><br> ${data.alert}
+                </div>
+            `;
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal(e) {
+            if(e.target === modalOverlay) { forceCloseModal(); }
+        }
+
+        function forceCloseModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // --- CONFIGURAÇÃO GLOBAL DOS GRÁFICOS ---
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+        Chart.defaults.font.family = 'Inter';
+        Chart.defaults.font.size = 11;
+
+        const formatBRL = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+        // --- SIMULADOR DE JUROS COMPOSTOS (INVESTIMENTOS) ---
+        let growthChartInstance;
+        
+        const initGrowthChart = () => {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            growthChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Valor Investido (Do seu bolso)', data: [], borderColor: '#4facfe', backgroundColor: 'rgba(79,172,254,0.1)', fill: true, tension: 0.2 },
+                        { label: 'Patrimônio Total (Com Juros)', data: [], borderColor: '#00e676', backgroundColor: 'rgba(0,230,118,0.1)', fill: true, tension: 0.2 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'A Curva Exponencial dos Juros Compostos', color: '#f8f9fa' },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { callback: (val) => 'R$ ' + (val/1000) + 'k' } } }
+                }
+            });
+        };
+
+        const updateSimulator = () => {
+            const P = parseFloat(document.getElementById('initAmount').value);
+            const PMT = parseFloat(document.getElementById('monthlyAmount').value);
+            const years = parseInt(document.getElementById('years').value);
+            const annualRate = parseFloat(document.getElementById('yieldRate').value) / 100;
+            
+            if(isNaN(P) || isNaN(PMT) || isNaN(years) || years <= 0) return;
+
+            const months = years * 12;
+            const monthlyRate = Math.pow(1 + annualRate, 1/12) - 1;
+
+            let balance = P;
+            let totalInvested = P;
+            
+            let historyInvested = [P];
+            let historyTotal = [P];
+            let labels = ['Ano 0'];
+
+            for(let m = 1; m <= months; m++) {
+                balance = balance * (1 + monthlyRate) + PMT;
+                totalInvested += PMT;
+                
+                if (m % 12 === 0) {
+                    historyInvested.push(totalInvested);
+                    historyTotal.push(balance);
+                    labels.push(`Ano ${m/12}`);
+                }
+            }
+
+            const totalInterest = balance - totalInvested;
+
+            document.getElementById('res-invested').innerText = formatBRL(totalInvested);
+            document.getElementById('res-interest').innerText = formatBRL(totalInterest);
+            document.getElementById('res-total').innerText = formatBRL(balance);
+
+            if (growthChartInstance) {
+                growthChartInstance.data.labels = labels;
+                growthChartInstance.data.datasets[0].data = historyInvested;
+                growthChartInstance.data.datasets[1].data = historyTotal;
+                growthChartInstance.update();
+            }
+        };
+
+        initGrowthChart();
+        ['initAmount', 'monthlyAmount', 'years', 'yieldRate'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateSimulator);
+            document.getElementById(id).addEventListener('change', updateSimulator);
+        });
+        updateSimulator();
+
+        // --- GRÁFICOS FIXOS ---
+        
+        // 1. Gráfico de Risco x Retorno (Dispersão / Pontos)
+        new Chart(document.getElementById('riskReturnChart').getContext('2d'), {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    { label: 'Poupança', data: [{x: 1, y: 1}], backgroundColor: '#00b0ff', pointRadius: 7, pointHoverRadius: 9 },
+                    { label: 'T. Selic', data: [{x: 1.5, y: 3}], backgroundColor: '#00e676', pointRadius: 7, pointHoverRadius: 9 },
+                    { label: 'CDB/LCI', data: [{x: 3, y: 4}], backgroundColor: '#ffc107', pointRadius: 7, pointHoverRadius: 9 },
+                    { label: 'FIIs', data: [{x: 6, y: 7}], backgroundColor: '#ff9800', pointRadius: 7, pointHoverRadius: 9 },
+                    { label: 'Ações', data: [{x: 8, y: 9}], backgroundColor: '#ff1744', pointRadius: 7, pointHoverRadius: 9 },
+                    { label: 'Cripto', data: [{x: 10, y: 10}], backgroundColor: '#b388ff', pointRadius: 7, pointHoverRadius: 9 }
+                ]
+            },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                layout: { padding: { bottom: 10, right: 10 } },
+                plugins: { 
+                    legend: { 
+                        display: true, 
+                        position: 'top', 
+                        labels: { color: '#f8f9fa', font: {size: 10}, usePointStyle: true, boxWidth: 8 } 
+                    }, 
+                    title: { display: true, text: 'Comparativo: Risco vs Retorno', color: '#f8f9fa', font: {size: 14} },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ' (Risco: ' + context.parsed.x + ' | Retorno: ' + context.parsed.y + ')';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        title: { display: true, text: 'Nível de Risco (0 a 10)', color: '#94a3b8', font: {weight: 'bold'} },
+                        min: 0, 
+                        max: 11, // Deixa um respiro para o ponto da cripto não colar na borda
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y: { 
+                        title: { display: true, text: 'Retorno Potencial (0 a 10)', color: '#94a3b8', font: {weight: 'bold'} },
+                        min: 0, 
+                        max: 11,
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+
+        // 2. Gráfico da Inflação (Textos em múltiplas linhas e eixos nomeados)
+        new Chart(document.getElementById('inflationChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: [
+                    ['Rentabilidade', 'Nominal (Bruta)'], 
+                    ['Inflação do', 'Período (IPCA)'], 
+                    ['Rentabilidade REAL', '(O que sobrou)']
+                ],
+                datasets: [{
+                    label: 'Taxa (%)',
+                    data: [10.5, 4.5, 6.0], 
+                    backgroundColor: ['#00b0ff', '#ff1744', '#00e676'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                layout: { padding: { bottom: 15 } },
+                plugins: { 
+                    legend: { display: false }, 
+                    title: { display: true, text: 'Juros Reais: O Efeito da Inflação', color: '#f8f9fa', font: {size: 14} } 
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Indicadores Econômicos', color: '#94a3b8', font: {weight: 'bold'} },
+                        ticks: { color: '#f8f9fa', font: {size: 10} }
+                    },
+                    y: {
+                        title: { display: true, text: 'Porcentagem (%)', color: '#94a3b8', font: {weight: 'bold'} },
+                        beginAtZero: true,
+                        ticks: { 
+                            color: '#94a3b8',
+                            callback: function(value) { return value + '%'; }
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- SISTEMA DE QUIZ ---
+        const quizData = [
+            {
+                question: "1. O que significa o conceito de 'Rentabilidade Real' em um investimento?",
+                options: [
+                    "A) O valor total que aparece no aplicativo do banco.",
+                    "B) O rendimento bruto sem descontar os impostos.",
+                    "C) O lucro que sobra APÓS descontar a inflação (IPCA) do período.",
+                    "D) A taxa Selic do ano atual.",
+                    "E) O rendimento obtido exclusivamente em imóveis físicos."
+                ],
+                correct: 2,
+                explanation: "Correta: C. A Rentabilidade Real é o que realmente aumenta seu poder de compra. Se você ganha 10% no banco, mas os preços no supermercado sobem 10% (inflação), seu ganho real foi zero."
+            },
+            {
+                question: "2. Qual a principal regra de segurança do mundo dos investimentos e das finanças?",
+                options: [
+                    "A) Colocar todo o dinheiro na aplicação que rendeu mais no ano passado.",
+                    "B) Diversificação: não colocar todos os ovos na mesma cesta, misturando renda fixa e variável.",
+                    "C) Investir apenas em imóveis físicos, pois eles nunca caem de preço.",
+                    "D) Sacar tudo antes das eleições.",
+                    "E) Só investir em moedas digitais."
+                ],
+                correct: 1,
+                explanation: "Correta: B. A diversificação dilui seus riscos. Quando uma parte da sua carteira cai (ações), a outra segura as pontas (renda fixa)."
+            },
+            {
+                question: "3. Onde um investidor iniciante deve alocar sua 'Reserva de Emergência'?",
+                options: [
+                    "A) Em ações pagadoras de dividendos.",
+                    "B) Em Bitcoin.",
+                    "C) Em investimentos de Alta Liquidez e Baixo Risco (ex: Tesouro Selic ou CDB de liquidez diária).",
+                    "D) Em Fundos Imobiliários.",
+                    "E) Na Caderneta de Poupança de outro banco."
+                ],
+                correct: 2,
+                explanation: "Correta: C. Reserva de emergência precisa ser resgatada rápido (Alta Liquidez) e não pode sofrer oscilação (Baixo Risco). A poupança perde dinheiro para a inflação, por isso Tesouro Selic ou CDBs 100% CDI são melhores."
+            },
+            {
+                question: "4. Você ouviu no jornal que 'A Taxa Selic subiu para conter a inflação'. Como isso afeta os investimentos?",
+                options: [
+                    "A) Os investimentos em Renda Fixa (CDB, Tesouro Selic) passam a render mais, atraindo os investidores.",
+                    "B) As Ações das empresas na bolsa imediatamente sobem muito.",
+                    "C) A poupança passa a render 2% ao mês.",
+                    "D) Não afeta em nada a economia real.",
+                    "E) Fica mais barato pegar empréstimos."
+                ],
+                correct: 0,
+                explanation: "Correta: A. Quando a Selic (taxa básica de juros) sobe, a Renda Fixa fica mais atrativa e segura. Por outro lado, pegar empréstimos fica mais caro, esfriando a economia."
+            },
+            {
+                question: "5. O que é o FGC (Fundo Garantidor de Créditos)?",
+                options: [
+                    "A) Um imposto cobrado sobre as ações da bolsa.",
+                    "B) Uma taxa do governo para investir no Tesouro Direto.",
+                    "C) Um seguro que protege investimentos bancários (como CDB, LCI, LCA e Poupança) em até R$ 250 mil caso o banco venha a falir.",
+                    "D) Uma criptomoeda lastreada em dólar.",
+                    "E) Um fundo que garante rentabilidade mínima na Bolsa de Valores."
+                ],
+                correct: 2,
+                explanation: "Correta: C. O FGC é uma entidade privada que traz segurança ao sistema financeiro. Se você investir em um CDB de um banco pequeno e ele quebrar, o FGC devolve seu capital até o teto de 250 mil reais."
+            },
+            {
+                question: "6. Qual a diferença prática entre comprar um Imóvel Físico para alugar e comprar cotas de Fundos Imobiliários (FIIs)?",
+                options: [
+                    "A) Imóvel físico não paga IPTU, FIIs pagam.",
+                    "B) O aluguel do imóvel físico cai na conta todo dia; os FIIs pagam anualmente.",
+                    "C) FIIs permitem investir em imóveis gigantes com pouco dinheiro (ex: R$ 100), têm isenção de IR nos aluguéis e alta liquidez na bolsa. Imóvel físico exige muito capital e tem baixa liquidez.",
+                    "D) Não há diferença, ambos são geridos por você.",
+                    "E) Os FIIs são garantidos pelo FGC."
+                ],
+                correct: 2,
+                explanation: "Correta: C. A grande vantagem dos FIIs é a acessibilidade e a diversificação, além de você não precisar lidar com inquilinos, reformas e imobiliárias."
+            },
+            {
+                question: "7. Quando falamos em investimentos, o que significa 'Liquidez'?",
+                options: [
+                    "A) O lucro em dinheiro vivo obtido no final de um ano.",
+                    "B) A velocidade e facilidade com que você consegue transformar um ativo (investimento) de volta em dinheiro na sua conta.",
+                    "C) A taxa de juros cobrada pelos bancos.",
+                    "D) O risco de a empresa falir.",
+                    "E) O imposto que incide sobre bebidas no exterior."
+                ],
+                correct: 1,
+                explanation: "Correta: B. Um imóvel físico tem BAIXA liquidez (demora meses para vender). O Tesouro Selic tem ALTA liquidez (o dinheiro cai no mesmo dia ou dia útil seguinte)."
+            },
+            {
+                question: "8. Em Renda Variável (Ações/FIIs/Cripto), por que não se deve tentar 'adivinhar o topo' ou entrar em desespero quando o mercado cai?",
+                options: [
+                    "A) Porque o mercado sempre sobe em linha reta todos os anos.",
+                    "B) Porque se cair, o banco devolve o dinheiro.",
+                    "C) Porque no longo prazo (anos), o que importa são os lucros e a qualidade dos ativos. A volatilidade de curto prazo é o 'preço do ingresso' para retornos maiores.",
+                    "D) Porque o governo congela as cotações se cair muito.",
+                    "E) Porque as criptomoedas são controladas pela Apple."
+                ],
+                correct: 2,
+                explanation: "Correta: C. Renda Variável, como o nome diz, varia. Se a empresa que você é sócio continua dando lucro e crescendo, quedas na cotação costumam ser oportunidades, não motivos para pânico."
+            },
+            {
+                question: "9. Sobre o funcionamento dos Juros Compostos, qual é a principal variável para multiplicar o patrimônio?",
+                options: [
+                    "A) O banco onde você investe.",
+                    "B) A quantia do primeiro aporte, independente do resto.",
+                    "C) Apenas a taxa de juros diária.",
+                    "D) O Tempo (prazo). É ele que faz a curva exponencial dos juros sobre juros explodir a longo prazo.",
+                    "E) O gerente da conta."
+                ],
+                correct: 3,
+                explanation: "Correta: D. Na fórmula dos juros compostos, o tempo (n) é um expoente. Investir R$ 200 por mês durante 30 anos gera um resultado imensamente maior do que investir R$ 1.000 por mês durante apenas 5 anos."
+            },
+            {
+                question: "10. João quer investir R$ 10.000 para a festa de formatura do filho, que ocorrerá em exatos 6 meses. Qual a escolha correta?",
+                options: [
+                    "A) Comprar ações da Petrobras, para tentar dobrar o dinheiro até lá.",
+                    "B) Comprar Bitcoin, para aproveitar a alta do momento.",
+                    "C) Investir em Fundos Imobiliários e guardar os dividendos de 6 meses.",
+                    "D) Renda Fixa conservadora e com liquidez (Tesouro Selic ou CDB DI). Dinheiro com prazo curto e objetivo definido NÃO PODE correr risco.",
+                    "E) Deixar em espécie embaixo do colchão para não pagar imposto."
+                ],
+                correct: 3,
+                explanation: "Correta: D. Regra de ouro: Dinheiro com data marcada para ser usado é Renda Fixa conservadora. Se João colocasse na bolsa e, no mês da formatura, houvesse uma crise global, ele não teria dinheiro para a festa."
+            }
+        ];
+
+        let userAnswers = new Array(quizData.length).fill(null);
+        let quizSubmitted = false;
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            
+            quizData.forEach((q, qIndex) => {
+                let html = `<div class="quiz-question">
+                                <h3>${q.question}</h3>
+                                <div class="quiz-options">`;
+                
+                q.options.forEach((opt, oIndex) => {
+                    html += `<div class="quiz-option" id="opt-${qIndex}-${oIndex}" onclick="selectOption(${qIndex}, ${oIndex})">
+                                ${opt}
+                             </div>`;
+                });
+
+                html += `</div>
+                         <div class="quiz-explanation" id="exp-${qIndex}">
+                            <strong>Explicação:</strong> ${q.explanation}
+                         </div>
+                      </div>`;
+                
+                container.innerHTML += html;
+            });
+        }
+
+        function selectOption(qIndex, oIndex) {
+            if (quizSubmitted) return;
+            
+            userAnswers[qIndex] = oIndex;
+            
+            for(let i = 0; i < 5; i++) {
+                document.getElementById(`opt-${qIndex}-${i}`).classList.remove('selected');
+            }
+            document.getElementById(`opt-${qIndex}-${oIndex}`).classList.add('selected');
+        }
+
+        function submitQuiz() {
+            if (quizSubmitted) return;
+            
+            if (userAnswers.includes(null)) {
+                alert("Por favor, responda todas as 10 perguntas antes de verificar.");
+                return;
+            }
+
+            let score = 0;
+            quizSubmitted = true;
+            document.getElementById('btnSubmitQuiz').style.display = 'none';
+
+            quizData.forEach((q, qIndex) => {
+                const selected = userAnswers[qIndex];
+                
+                for(let i = 0; i < 5; i++) {
+                    document.getElementById(`opt-${qIndex}-${i}`).classList.add('disabled');
+                }
+
+                if (selected === q.correct) {
+                    score++;
+                    document.getElementById(`opt-${qIndex}-${selected}`).classList.add('correct');
+                } else {
+                    document.getElementById(`opt-${qIndex}-${selected}`).classList.add('wrong');
+                    document.getElementById(`opt-${qIndex}-${q.correct}`).classList.add('correct');
+                }
+
+                document.getElementById(`exp-${qIndex}`).classList.add('active');
+            });
+
+            const resultBox = document.getElementById('quizResult');
+            const scoreText = document.getElementById('scoreText');
+            const scoreMessage = document.getElementById('scoreMessage');
+            
+            resultBox.style.display = 'block';
+            scoreText.innerText = `${score} / 10`;
+            
+            if (score === 10) {
+                scoreMessage.innerText = "Impecável! Você entende os pilares do risco, tempo e juros compostos. Está pronto para proteger e multiplicar seu patrimônio.";
+            } else if (score >= 7) {
+                scoreMessage.innerText = "Muito bom! Seus conceitos básicos de diversificação e Renda Fixa estão sólidos. Revise apenas os detalhes para não deixar dinheiro na mesa.";
+            } else if (score >= 4) {
+                scoreMessage.innerText = "Atenção! Você precisa estudar um pouco mais sobre Liquidez e Renda Fixa antes de arriscar seu dinheiro no mercado.";
+            } else {
+                scoreMessage.innerText = "Alerta! Suas escolhas colocam seu dinheiro em grande risco. Estude com cuidado a diferença entre os tipos de investimentos antes de operar.";
+                scoreText.style.color = "var(--danger)";
+            }
+        }
+
+        function resetQuiz() {
+            userAnswers = new Array(quizData.length).fill(null);
+            quizSubmitted = false;
+
+            document.getElementById('quizResult').style.display = 'none';
+            document.getElementById('btnSubmitQuiz').style.display = 'inline-block';
+            document.getElementById('scoreText').style.color = "var(--primary)";
+
+            renderQuiz();
+            document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
